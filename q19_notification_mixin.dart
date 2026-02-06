@@ -23,6 +23,6 @@ class Student with NotificationMixin implements Registrable {
 }
 
 void main() {
-  Student student = Student('Zoe Martinez', 21);
+  Student student = Student('Philippe Mugisha', 21);
   student.registerCourse('Data Structures');
 }
