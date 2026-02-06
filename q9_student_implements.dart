@@ -18,6 +18,6 @@ class Student implements Registrable {
 }
 
 void main() {
-  Student student = Student('Emma Watson', 20);
-  student.registerCourse('Computer Science 101');
+  Student student = Student('Philippe Billy', 21);
+  student.registerCourse('Mobile Application');
 }
