@@ -5,10 +5,12 @@ mixin AttendanceMixin {
 
   void markAttendance() {
     _attendanceCount++;
+    
   }
 
   int get attendanceCount => _attendanceCount;
+  
 }
 
-void main() {
+void main() {  
 }
