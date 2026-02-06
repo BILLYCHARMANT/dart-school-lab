@@ -9,7 +9,7 @@ class Student {
 
 void main() {
   List<Student> students = [];
-  students.add(Student('Grace Taylor', 18));
-  students.add(Student('Henry Brown', 19));
-  students.add(Student('Ivy Johnson', 20));
+  students.add(Student('Grace Kalisa', 18));
+  students.add(Student('Aline Ishime', 19));
+  students.add(Student('Silas Cepe', 20));
 }
