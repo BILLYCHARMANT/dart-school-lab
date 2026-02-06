@@ -3,5 +3,5 @@
 void greetStudent(String studentName) => print('Hello, $studentName!');
 
 void main() {
-  greetStudent('Paul Martinez');
+  greetStudent('Paul Kwizera');
 }
