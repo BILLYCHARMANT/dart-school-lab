@@ -1,0 +1,6 @@
+name: dart_school_lab
+description: Dart Programming Lab 1 - School Management System
+version: 1.0.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
