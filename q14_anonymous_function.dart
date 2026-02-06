@@ -9,9 +9,9 @@ class Student {
 
 void main() {
   List<Student> students = [
-    Student('Mary White', 18),
-    Student('Nick Green', 19),
-    Student('Olivia Black', 20),
+    Student('Mary Kayisire', 18),
+    Student('Nick Kalinda', 19),
+    Student('Olivia Izere', 20),
   ];
   
   students.forEach((student) {
