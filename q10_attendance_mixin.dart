@@ -7,9 +7,8 @@ mixin AttendanceMixin {
     _attendanceCount++;
     
   }
-
-  int get attendanceCount => _attendanceCount;
   
+  int get attendanceCount => _attendanceCount;
 }
 
 void main() {  
