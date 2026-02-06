@@ -17,6 +17,6 @@ class Student extends Person {
 }
 
 void main() {
-  Student student = Student('David Lee', 19);
+  Student student = Student('Billy Charmant', 19);
   student.introduce();
 }
