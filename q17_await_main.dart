@@ -12,9 +12,9 @@ class Student {
 Future<List<Student>> loadStudents() async {
   await Future.delayed(Duration(seconds: 2));
   return [
-    Student('Wendy Chen', 18),
-    Student('Xavier Lopez', 19),
-    Student('Yara Singh', 20),
+    Student('Philippe Mugisha', 18),
+    Student('Billy Charmant', 19),
+    Student('Mulisa Sana', 20),
   ];
 }
 
