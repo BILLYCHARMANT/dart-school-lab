@@ -9,9 +9,9 @@ class Student {
 
 void main() {
   Map<String, Student> studentMap = {
-    'ST001': Student('Jack Wilson', 18),
+    'ST001': Student('Jack Billy', 18),
     'ST002': Student('Kate Davis', 19),
-    'ST003': Student('Luke Anderson', 20),
+    'ST003': Student('Luke Philippe', 21),
   };
   
   studentMap.forEach((id, student) {
