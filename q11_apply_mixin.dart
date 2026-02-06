@@ -18,7 +18,7 @@ class Student with AttendanceMixin {
 }
 
 void main() {
-  Student student = Student('Frank Miller', 22);
+  Student student = Student('Billy Charmant', 22);
   student.markAttendance();
   student.markAttendance();
   student.markAttendance();
