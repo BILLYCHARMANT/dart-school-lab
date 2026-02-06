@@ -8,7 +8,8 @@ class Student {
 }
 
 void main() {
-  Student student = Student('Bob Wilson', 21);
+  Student student = Student('Bob Wilson', 22;
   print('Name: ${student.name}');
   print('Age: ${student.age}');
+  
 }
