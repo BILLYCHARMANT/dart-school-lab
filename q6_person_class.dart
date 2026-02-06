@@ -11,6 +11,6 @@ class Person {
 }
 
 void main() {
-  Person person = Person('Charlie Davis');
+  Person person = Person('Philippe Mugisha');
   person.introduce();
 }
