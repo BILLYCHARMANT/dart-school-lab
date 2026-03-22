@@ -1,15 +1,14 @@
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final appDocumentDir = await getApplicationDocumentsDirectory();
-  Hive.init(appDocumentDir.path);
+  await Hive.initFlutter();
   await Hive.openBox('cache');
   runApp(const MyApp());
 }
@@ -20,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'API Lab 4',
+      title: 'Posts Manager',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -49,6 +48,39 @@ class Post {
       id: json['id'] as int,
       title: json['title'] as String,
       body: json['body'] as String,
+    );
+  }
+}
+
+class PostDetailScreen extends StatelessWidget {
+  final Post post;
+
+  const PostDetailScreen({super.key, required this.post});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Post Details')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('ID: ${post.id}', style: const TextStyle(fontSize: 14)),
+            Text(
+              'User ID: ${post.userId}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              post.title,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(post.body, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -216,11 +248,187 @@ class _PostsPageState extends State<PostsPage> {
     }
   }
 
+  Future<Post> _createPost(String title, String body) async {
+    const String url = 'https://jsonplaceholder.typicode.com/posts';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({'title': title, 'body': body, 'userId': 1}),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final post = Post.fromJson({
+        'userId': data['userId'] ?? 1,
+        'id': data['id'] ?? _allPosts.length + 1,
+        'title': data['title'] ?? title,
+        'body': data['body'] ?? body,
+      });
+      return post;
+    } else {
+      throw Exception('Failed to create post (status: ${response.statusCode})');
+    }
+  }
+
+  Future<Post> _updatePost(Post post) async {
+    final String url = 'https://jsonplaceholder.typicode.com/posts/${post.id}';
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({
+        'id': post.id,
+        'title': post.title,
+        'body': post.body,
+        'userId': post.userId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return Post.fromJson({
+        'userId': data['userId'] ?? post.userId,
+        'id': data['id'] ?? post.id,
+        'title': data['title'] ?? post.title,
+        'body': data['body'] ?? post.body,
+      });
+    } else {
+      throw Exception('Failed to update post (status: ${response.statusCode})');
+    }
+  }
+
+  Future<void> _deletePost(int id) async {
+    final String url = 'https://jsonplaceholder.typicode.com/posts/$id';
+    final response = await http.delete(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        _allPosts.removeWhere((post) => post.id == id);
+        _filteredPosts = _filterPosts(_allPosts);
+      });
+      final cacheBox = Hive.box('cache');
+      cacheBox.put(
+        'posts',
+        jsonEncode(
+          _allPosts
+              .map(
+                (post) => {
+                  'userId': post.userId,
+                  'id': post.id,
+                  'title': post.title,
+                  'body': post.body,
+                },
+              )
+              .toList(),
+        ),
+      );
+    } else {
+      throw Exception('Failed to delete post (status: ${response.statusCode})');
+    }
+  }
+
+  Future<void> _showPostForm({Post? post}) async {
+    final titleController = TextEditingController(text: post?.title ?? '');
+    final bodyController = TextEditingController(text: post?.body ?? '');
+
+    final isEditing = post != null;
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isEditing ? 'Edit Post' : 'Create Post'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: bodyController,
+                decoration: const InputDecoration(labelText: 'Body'),
+                maxLines: 4,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final title = titleController.text.trim();
+                final body = bodyController.text.trim();
+                if (title.isEmpty || body.isEmpty) {
+                  return;
+                }
+
+                Navigator.of(context).pop();
+                try {
+                  if (isEditing) {
+                    final updatedPost = await _updatePost(
+                      Post(
+                        userId: post!.userId,
+                        id: post.id,
+                        title: title,
+                        body: body,
+                      ),
+                    );
+                    setState(() {
+                      final index = _allPosts.indexWhere(
+                        (p) => p.id == post.id,
+                      );
+                      if (index != -1) _allPosts[index] = updatedPost;
+                      _filteredPosts = _filterPosts(_allPosts);
+                    });
+                  } else {
+                    final newPost = await _createPost(title, body);
+                    setState(() {
+                      _allPosts.insert(0, newPost);
+                      _filteredPosts = _filterPosts(_allPosts);
+                    });
+                  }
+                  final cacheBox = Hive.box('cache');
+                  cacheBox.put(
+                    'posts',
+                    jsonEncode(
+                      _allPosts
+                          .map(
+                            (post) => {
+                              'userId': post.userId,
+                              'id': post.id,
+                              'title': post.title,
+                              'body': post.body,
+                            },
+                          )
+                          .toList(),
+                    ),
+                  );
+                } catch (e) {
+                  setState(() {
+                    _lastError = e.toString();
+                  });
+                }
+              },
+              child: Text(isEditing ? 'Save' : 'Create'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPostDetail(Post post) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => PostDetailScreen(post: post)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lab 4: Consume API'),
+        title: const Text('Posts Manager'),
         actions: [
           if (_lastError != null)
             IconButton(
@@ -309,11 +517,39 @@ class _PostsPageState extends State<PostsPage> {
                   title: Text(post.title),
                   subtitle: Text(post.body),
                   isThreeLine: true,
+                  onTap: () => _showPostDetail(post),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == 'view') {
+                        _showPostDetail(post);
+                      } else if (value == 'edit') {
+                        _showPostForm(post: post);
+                      } else if (value == 'delete') {
+                        await _deletePost(post.id);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'view',
+                        child: Text('View Details'),
+                      ),
+                      const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Text('Delete'),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showPostForm(),
+        tooltip: 'Create Post',
+        child: const Icon(Icons.add),
       ),
     );
   }
