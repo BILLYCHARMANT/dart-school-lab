@@ -1,0 +1,14 @@
+{
+  "roots": [
+    "dart_school_lab"
+  ],
+  "packages": [
+    {
+      "name": "dart_school_lab",
+      "version": "1.0.0",
+      "dependencies": [],
+      "devDependencies": []
+    }
+  ],
+  "configVersion": 1
+}

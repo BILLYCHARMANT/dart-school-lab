@@ -1,0 +1,16 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "dart_school_lab",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    }
+  ],
+  "generator": "pub",
+  "generatorVersion": "3.11.3",
+  "flutterRoot": "file:///C:/Users/unipod/develop/flutter",
+  "flutterVersion": "3.41.5",
+  "pubCache": "file:///C:/Users/unipod/AppData/Local/Pub/Cache"
+}
